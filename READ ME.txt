@@ -1,0 +1,22 @@
+Adaptive Tic Tac Toe
+This is a customizable Tic Tac Toe game built in Java, designed to go beyond the traditional 3x3 grid format.
+
+How to Play
+To start a game, compile and run the program from your command prompt.
+Use the following command format:
+
+java GameMain <players> <rows> <columns> <tokensToWin>
+Arguments:
+players – Number of players (1 for single-player vs. computer, 2 for two-player mode).
+
+rows – Number of rows for the game board.
+
+columns – Number of columns for the game board.
+
+tokensToWin – Number of consecutive tokens required to win (vertical, horizontal, or diagonal).
+This value must be less than or equal to the larger of the row or column count.
+
+Notes:
+In single-player mode, the computer opponent plays randomly.
+
+The game works with any grid size, making it more challenging and adaptable than classic Tic Tac Toe.
