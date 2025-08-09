@@ -12,28 +12,51 @@ public class GameMain {
      */
 
     public static void main(String[] args) {
-        User me = new User();
-        Player[] players = new Player[2];
-        int n = Integer.parseInt(args[0]);
-        if (n==2) {
-            User you = new User();
-            players[0] = you;
-        } else if (n==1) {
-            Computer ordi = new Computer();
-            players[0] = ordi;
-        } else {
-            System.out.println("Number of Players must be between 1 and 2. You're input is "+n);
-            System.exit(0);
-        }
-        players[1] = me;
-
         Game game;
-        int lines, columns, win;
-        lines = Integer.parseInt(args[1]);
-        columns = Integer.parseInt(args[2]);
-        win = Integer.parseInt(args[3]);
+        try {
+            int rows, columns, win;
+            rows = Integer.parseInt(args[0]);
+            columns = Integer.parseInt(args[1]);
+            win = Integer.parseInt(args[2]);
 
-        game = new Game(lines, columns, win);
+            if (win > rows && win > columns) {
+                System.out.println("The game is impossible to win! You can't get " + win +
+                        " in a row in a " + rows + " x " + columns + " grid.");
+                throw new IllegalArgumentException("Invalid win condition");
+            }
+
+            game = new Game(rows, columns, win);
+            
+        } catch (Exception e) {
+            System.out.println("Invalid or no custom arguments given. A default game will be generated.");
+            game = new Game();
+        }
+
+        int n = 0;
+        while (true) {
+            try {
+                n = Integer.parseInt(GameMain.console.readLine("Indicate the number of players (1 or 2): "));
+                if (n != 1 && n !=2) {
+                    throw new IllegalArgumentException("invalid amount of players");
+                }
+                break;
+            } catch (Exception e) {
+                System.out.println(e + ". Please try again.");
+            }
+        }
+
+        Player[] players = new Player[2];
+        User player1 = new User();
+        players[0] = player1;
+
+        if (n==2) {
+            User player2 = new User();
+            players[1] = player2;
+
+        } else {
+            Computer computer = new Computer();
+            players[1] = computer;
+        }
 
         int turn = 0;
         players[turn % 2].startNewGame(BoxSymbol.X);
