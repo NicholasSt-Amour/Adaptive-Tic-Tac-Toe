@@ -1,58 +1,26 @@
 import java.util.ArrayList;
 
-public class Game {
+public abstract class Game {
+    protected int rows;
+    protected int columns;
+    protected int round;
+    protected GameState gameState; // Current state of the game (e.g. PLAYING, XWIN, OWIN, DRAW)
+    protected int numberWin; // Number of consecutive symbols needed to win
 
-    private BoxSymbol[] board;
-    private int round;
-    private GameState gameState;
-    private final int rows;
-    private final int columns;
-    private final int numberWin;
+     // Getters (accessors)
+    public int getRows() {return rows;}
 
-    public Game() {
-        this(3, 3, 3);
-    }
+    public int getColumns() {return columns;}
 
-    /**
-     * constructeur permettant de préciser le nombre de lignes et le nombre de colonnes pour le jeu,
-     * ainsi que le nombre de cellules qu'il faut aligner pour gagner.
-     *
-     * @param rows      the number of rows in the game
-     * @param columns   the number of columns in the game
-     * @param numberWin the number of cells that must be aligned to win.
-     */
 
-    public Game(int rows, int columns, int numberWin) {
-        this.rows = rows;
-        this.columns = columns;
-        this.numberWin = numberWin;
-        this.board = new BoxSymbol[rows * columns];
-        this.round = 0;
-        this.gameState = GameState.PLAYING;
-    }
+    public int getRound() {return round;}
 
-    public int getRows() {
-        return rows;
-    }
-
-    public int getColumns() {
-        return columns;
-    }
-
-    public int getRound() {
-        return round;
-    }
-
-    public GameState getGameState() {
-        return gameState;
-    }
-
-    public int getNumberWin() {
-        return numberWin;
-    }
+    public GameState getGameState() {return gameState;}
 
     /**
-     * @return the value of the enum BoxSymbol corresponding to the next expected symbol.
+     * Determines the next player symbol based on the current round.
+     * Even rounds -> X plays, Odd rounds -> O plays.
+     * @return BoxSymbol.X or BoxSymbol.O representing the next player
      */
     public BoxSymbol nextBoxSymbol() {
         if (round % 2 == 0) return BoxSymbol.X;
@@ -61,228 +29,197 @@ public class Game {
 
 
     /**
-     * renvoie la valeur de la case a l'index i. Si l'index n'est pas valide, 
-     * un message d'erreur est imprimé. Le comportement est alors indéterminé
-     *
-     * @param i the index of the Box in the array board
-     * @return the value at index i in the variable board.
+     * Resets the game state to start a new game:
+     * - Resets the round counter to 0.
+     * - Sets the game state back to PLAYING.
+     * - Clears the current board data.
+     * - Initializes the board to prepare for a fresh game.
      */
-    public BoxSymbol boxSymbolAt(int i) {
-        if (i < 1 || i > rows * columns) {
-            System.out.println("Illegal position: " + i);
-        }
-        return board[i - 1];
-    }
-
-    /**
-     * @param i the index of the box in the array board that has been
-     *          selected by the next player
-     */
-    public void play(int i) {
-        if (gameState != GameState.PLAYING) return;
-
-        if (i < 1 || i > rows * columns) {
-            System.out.println("Illegal position: " + i);
-            return;
-        }
-        if (board[i - 1] != null) {
-            System.out.println("Box " + i + " is already taken");
-            return;
-        }
-
-        board[i - 1] = this.nextBoxSymbol();
-        round++;
-        update(i - 1);
-    }
-
-    public void undo(int i) {
-        // We assume that if a game is won, no other plays can be done.
-        // Therefore, the last move either didn't change the game state or it was a winning move. Undoing the move therefore changes to a playing state.
+    public void reset() {
+        round = 0;
         gameState = GameState.PLAYING;
-        board[i - 1] = null;
-        round--;
     }
 
     /**
-     * Une méthode d'assistance qui met à jour la variable gameState
-     * correctement après que la case à l'index i vient d'etre défini.
-     * La méthode suppose qu'avant de paramétrer la case
-     * à l'index i, la variable gameState a été correctement définie.
-     * cela suppose aussi qu'elle n'est appelée que si le jeu n'a pas encore été
-     * terminé lorsque la case à l'index i a été jouée
-     * (le jeu en cours). Il suffit donc de
-     * Vérifiez si jouer à l'index i a terminé la partie.
-     *
-     * @param index the index of the box in the array board that has just
-     *              been set
+     * Returns a string representation of the board, useful for printing to console.
+     * Shows the board with symbols and grid lines.
+     * 
+     * @return formatted board string
      */
-    private void update(int index) {
-    int row = index / columns;
-    int col = index % columns;
-    BoxSymbol currentSymbol = board[index];
-    int numAllignedBox = 1;
-
-    // Check the row
-    // Check the right side
-    for (int j = 1; col + j < columns; j++) {
-        if (board[index + j] == currentSymbol) {
-            numAllignedBox++;
-        } else {
-            break;
-        }
-    }
-
-    // Check the left side
-    for (int j = 1; col - j >= 0; j++) {
-        if (board[index - j] == currentSymbol) {
-            numAllignedBox++;
-        } else {
-            break;
-        }
-    }
-    // Check win statement
-    if (numAllignedBox >= numberWin) {
-        gameState = currentSymbol == BoxSymbol.X ? GameState.XWIN : GameState.OWIN;
-        return;
-    }
-    // Check the column
-    numAllignedBox = 1; // Reset count
-    // Check down
-    for (int j = 1; row + j < rows; j++) {
-        if (board[(row + j) * columns + col] == currentSymbol) {
-            numAllignedBox++;
-        } else {
-            break;
-        }
-    }
-    // Check up
-    for (int j = 1; row - j >= 0; j++) {
-        if (board[(row - j) * columns + col] == currentSymbol) {
-            numAllignedBox++;
-        } else {
-            break;
-        }
-    }
-    // Check win statement
-    if (numAllignedBox >= numberWin) {
-        gameState = currentSymbol == BoxSymbol.X ? GameState.XWIN : GameState.OWIN;
-        return;
-    }
-
-    // Check main diagonal
-    numAllignedBox = 1; // Reset count
-    // Check down-right
-    for (int j = 1; row + j < rows && col + j < columns; j++) {
-        if (board[(row + j) * columns + col + j] == currentSymbol) {
-            numAllignedBox++;
-        } else {
-            break;
-        }
-    }
-    // Check up-left
-    for (int j = 1; row - j >= 0 && col - j >= 0; j++) {
-        if (board[(row - j) * columns + col - j] == currentSymbol) {
-            numAllignedBox++;
-        } else {
-            break;
-        }
-    }
-
-    // Check win statement
-    if (numAllignedBox >= numberWin) {
-        gameState = currentSymbol == BoxSymbol.X ? GameState.XWIN : GameState.OWIN;
-        return;
-    }
-
-    // Check anti-diagonal
-    numAllignedBox = 1; // Reset count
-    // Check down-left
-    for (int j = 1; row + j < rows && col - j >= 0; j++) {
-        if (board[(row + j) * columns + col - j] == currentSymbol) {
-            numAllignedBox++;
-        } else {
-            break;
-        }
-    }
-    // Check up-right
-    for (int j = 1; row - j >= 0 && col + j < columns; j++) {
-        if (board[(row - j) * columns + col + j] == currentSymbol) {
-            numAllignedBox++;
-        } else {
-            break;
-        }
-    }
-
-    // Check win statement
-    if (numAllignedBox >= numberWin) {
-        gameState = currentSymbol == BoxSymbol.X ? GameState.XWIN : GameState.OWIN;
-        return;
-    }
-
-    // Check for draw
-    if (round >= rows * columns) {
-        gameState = GameState.DRAW;
-    }
-}
-
-    public ArrayList<Integer> getAvailableMoves() {
-        ArrayList<Integer> availableMoves = new ArrayList<>();
-        for (int i = 1; i<=getRows()*getColumns(); i++) {
-            if (boxSymbolAt(i) == null) {
-                availableMoves.add(i);
-            }
-        }
-        return availableMoves;
-    }
-
-    public Game clone() {
-        Game copy = new Game(this.rows, this.columns, this.numberWin);
-        copy.round = this.round;
-        copy.gameState = this.gameState;
-        copy.board = this.board.clone();
-        return copy;
-    }
-
-    public int randomPlayout() {
-        while (getGameState() == GameState.PLAYING) {
-            ArrayList<Integer> availableMoves = this.getAvailableMoves();
-            int move = availableMoves.get(GameMain.generator.nextInt(availableMoves.size()));
-            play(move);
-        }
-
-        if (getGameState() == GameState.OWIN) return 10;
-        if (getGameState() == GameState.XWIN) return -10;
-        return 0;
-    }
-
-    /**
-     * Renvoie une représentation sous forme de chaîne du jeu correspondant
-     * à l'exemple fourni dans la description du devoir
-     *
-     * @return String representation of the game
-     */
-
     public String toString() {
         String res = "";
         for (int i = 0; i < rows; i++) {
+            // Do one row at a time
             for (int j = 0; j < columns; j++) {
-                BoxSymbol symbol = boxSymbolAt(i * columns + j + 1);
+                BoxSymbol symbol = boxSymbolAt(i * columns + j);
                 if (j < columns - 1) {
                     res += (symbol == null ? " " : symbol) + " | ";
                 } else {
                     res += (symbol == null ? " " : symbol);
                 }
             }
-            res += GameMain.NEW_LINE;
+            res += "\n";
 
+            // Row seperator
             if (i < rows - 1) {
-                // Assure la bonne taille pour la ligne
                 for (int j = 0; j < columns - 1; j++) {
                     res += "----";
                 }
-                res += "-" + GameMain.NEW_LINE;
+                res += "-" + "\n";
             }
         }
         return res;
     }
+
+    /**
+     * Helper method to update the game state after a move is played at index i.
+     * This method assumes the game was not already finished before this move.
+     * It checks if the move ended the game by forming a line of numberWin symbols
+     * horizontally, vertically, or diagonally.
+     * If no win is found and the board is full, sets the game state to DRAW.
+     *
+     * @param i the linear index of the box that was just played
+     */
+    protected void update(int i) {
+        int row = i / columns;
+        int col = i % columns;
+        BoxSymbol currentSymbol = this.nextBoxSymbol(); // Symbol of the player who just played
+        int numAllignedBox = 1; // Count of aligned symbols, starting at 1 for the current box
+        round++; // Increment round counter after the move and after extracting current Symbol
+
+        // Check the row
+        // Check the right side
+        for (int j = 1; j < columns - col; j++) {
+            if (boxSymbolAt(i+j) != currentSymbol) {
+                break;
+            }
+            numAllignedBox++;
+        }
+
+        // Check the left side
+        for (int j = 1; j < col + 1; j++) {
+            if (boxSymbolAt(i-j) != currentSymbol) {
+                break;
+            }
+            numAllignedBox++;
+        }
+
+        // Check win statement
+        if (numAllignedBox >= numberWin) {
+            gameState = currentSymbol == BoxSymbol.X ? GameState.X_WIN : GameState.O_WIN;
+            return;
+        }
+        
+        numAllignedBox = 1; // Reset count
+        // Check the column
+        // Check down
+        for (int j = 1; j < rows - row; j++) {
+            if (boxSymbolAt(i+j*columns) != currentSymbol) {
+                break;
+            }
+            numAllignedBox++;
+        }
+
+        // Check up
+        for (int j = 1; j < row + 1; j++) {
+            if (boxSymbolAt(i-j*columns) != currentSymbol) {
+                break;
+            }
+            numAllignedBox++;
+        }
+
+        // Check win statement
+        if (numAllignedBox >= numberWin) {
+            gameState = currentSymbol == BoxSymbol.X ? GameState.X_WIN : GameState.O_WIN;
+            return;
+        }        
+
+        numAllignedBox = 1; // Reset count
+        // Check main diagonal
+        // Check up-left
+        for (int j = 1; j < Math.min(row + 1, col + 1); j++) {
+            if (boxSymbolAt(i-j*(columns+1)) != currentSymbol) {
+                break;
+            }
+            numAllignedBox++;
+        }
+
+        // Check down-right
+        for (int j = 1; j < Math.min(rows - row, columns - col); j++) {
+            if (boxSymbolAt(i+j*(columns+1)) != currentSymbol) {
+                break;
+            }
+            numAllignedBox++;
+        }
+
+        // Check win statement
+        if (numAllignedBox >= numberWin) {
+            gameState = currentSymbol == BoxSymbol.X ? GameState.X_WIN : GameState.O_WIN;
+            return;
+        } 
+
+        numAllignedBox = 1; // Reset count
+        // Check anti-diagonal
+        // Check up-right
+        for (int j = 1; j < Math.min(row + 1, columns - col); j++) {
+            if (boxSymbolAt(i-j*(columns-1)) != currentSymbol) {
+                break;
+            }
+            numAllignedBox++;
+        }
+
+        // Check down-left
+        for (int j = 1; j < Math.min(rows - row, col + 1); j++) {
+            if (boxSymbolAt(i+j*(columns-1)) != currentSymbol) {
+                break;
+            }
+            numAllignedBox++;
+        }
+
+        // Check win statement
+        if (numAllignedBox >= numberWin) {
+            gameState = currentSymbol == BoxSymbol.X ? GameState.X_WIN : GameState.O_WIN;
+            return;
+        } 
+
+        // Check for draw
+        if (round >= columns * rows) {
+            gameState = GameState.DRAW;
+        }
+    }
+
+    // Abstract method to get the list of available moves for the current game state
+    public abstract ArrayList<Integer> getAvailableMoves();
+
+    /**
+     * Simulates a random playout from the current state until the game ends.
+     * This is used for the Monte Carlo algorithm.
+     * 
+     * @return 1 if O wins, -1 if X wins, 0 for draw
+     */
+    public int randomPlayout() {
+        while (gameState == GameState.PLAYING) {
+            ArrayList<Integer> availableMoves = getAvailableMoves();
+            int move = availableMoves.get(Main.generator.nextInt(availableMoves.size()));
+            play(move);
+        }
+        if (gameState == GameState.O_WIN) return 1;
+        if (gameState == GameState.X_WIN) return -1;
+        return 0;
+    }
+
+
+    /**
+     * Abstract method to get the symbol at a specific position.
+     * 
+     * @param i linear index of the box on the board
+     * @return BoxSymbol at index i or null if empty
+     */
+    public abstract BoxSymbol boxSymbolAt(int i);
+
+    // Abstract method to play a move at index i
+    public abstract void play(int i);
+
+    // Abstract method to clone the current game state (deep copy)
+    public abstract Game clone();
 }

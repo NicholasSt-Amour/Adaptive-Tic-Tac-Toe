@@ -1,22 +1,38 @@
-Adaptive Tic Tac Toe
-This is a customizable Tic Tac Toe game built in Java, designed to go beyond the traditional 3x3 grid format.
+Adaptive Tic Tac Toe & Connect 4
+This Java project features two classic grid-based games:
+- A fully customizable Tic Tac Toe, going beyond the traditional 3×3 grid
+- Connect 4 with a standard 6×7 board.
 
-How to Play
 To start a game, compile and run the program from your command prompt.
+
+Connect 4
+How to Play
 Use the following command format:
+java C4main
 
-java GameMain <players> <rows> <columns> <tokensToWin>
+Game Notes:
+Choose between 1-player (vs computer) or 2-player mode.
+The AI uses smart strategies to provide a challenging opponent
+
+Tic Tac Toe
+How to Play
+Use the following command format:
+java TTTmain <rows> <columns> <tokensToWin>
 Arguments:
-players – Number of players (1 for single-player vs. computer, 2 for two-player mode).
-
 rows – Number of rows for the game board.
-
 columns – Number of columns for the game board.
-
 tokensToWin – Number of consecutive tokens required to win (vertical, horizontal, or diagonal).
 This value must be less than or equal to the larger of the row or column count.
 
-Notes:
-In single-player mode, the computer opponent plays randomly.
+Game Notes:
+At the start, you’ll choose between 1-player and 2-player mode.
+In single-player mode, the computer opponent is smart — it cannot lose on a 3×3 grid.
+If you find you’re winning instantly in single-player, you’ve likely picked a grid size and win condition that guarantees a player win.
 
-The game works with any grid size, making it more challenging and adaptable than classic Tic Tac Toe.
+Recommended Configurations:
+java TTTmain 3 3 3   # Classic Tic Tac Toe
+java TTTmain 5 5 4   # 5×5 grid, 4 in a row to win
+java TTTmain 10 10 7 # Large grid, longer win condition
+
+If no arguments are provided, a default 3×3 game is started:
+java TTTmain        # Classic Tic Tac Toe

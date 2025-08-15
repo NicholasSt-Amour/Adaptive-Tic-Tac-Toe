@@ -1,6 +1,6 @@
 public enum GameState{
     PLAYING,
     DRAW,
-    XWIN,
-    OWIN
+    X_WIN,
+    O_WIN
 }
